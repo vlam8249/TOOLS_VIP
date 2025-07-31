@@ -1,0 +1,761 @@
+import sys,os,time,json
+
+def kiemtrathietbi():
+
+
+
+           return "com.termux" in os.environ.get("PREFIX", "")
+
+listmd = [
+
+        # 'faker',
+
+        'tqdm',
+
+        'imaplib',
+
+        'threading',
+
+        'getuseragent',
+
+      #  'numpy',
+
+        'unidecode',
+
+        'colorama',
+
+       # 'wmi',
+
+        'fake_useragent',
+
+        'ctypes',
+
+        'logging',
+
+        'pywintypes']
+
+import importlib
+
+for i in range (len(listmd)-1):
+
+    try:
+
+        module=listmd[i]
+
+        importlib.import_module(module)
+
+    except:
+
+        os.system (f'pip install {listmd[i]}')
+
+        importlib.import_module(module)  
+
+import sys,platform,os,json,base64,hashlib,random,requests,logging,json,threading,time
+
+import os.path,getuseragent
+
+from datetime import datetime ,date
+
+def randommau():
+
+    rand = random.randint(1, 231)
+
+    if rand <= 7:
+
+        mau = "\033[1;3" + str(random.randint(1, 7)) + "m"
+
+    elif rand >= 8 and rand <= 231:
+
+        rand = random.randint(1, 231)
+
+        mau = "\033[38;5;" + str(rand) + "m"
+
+    return mau
+
+class  Golike_INSTA:
+
+    def __init__ (self,account_id,athor,req = None,UserAgent ='Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'):
+
+        self.header = {'Host':'gateway.golike.net',    'Accept':'application/json, text/plain, */*',    "Accept-Language": "vi-VN,vi;q=0.9,fr-FR;q=0.8,fr;q=0.7,en-US;q=0.6,en;q=0.5",    'Authorization': athor,    'Content-Type':'application/json;charset=UTF-8',    'Origin':'https://app.golike.net',    'Sec-Ch-Ua':'"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',    'Sec-Ch-Ua-Mobile':'?1',    'Sec-Ch-Ua-Platform':'"Android"',    'Sec-Fetch-Dest':'empty',    'Sec-Fetch-Mode':'cors',    'Sec-Fetch-Site':'same-site',    'T':'VFZSamVVMVVVVEJQVkdOM1RWRTlQUT09',    'User-Agent':UserAgent}
+
+        if (req == None):
+
+            self.req= requests.Session ()
+
+        else:
+
+            self.req= req
+
+        self.account_id = account_id
+
+        self.athor = athor
+
+        self.UserAgent= UserAgent
+
+    def get_jobs (self):
+
+        import json
+
+        get_ = self.req.get(url='https://gateway.golike.net/api/advertising/publishers/instagram/jobs?instagram_account_id=' + str(self.account_id) + '"&data=null', headers=self.header).text
+
+        jsonstr = json.loads(get_)
+
+        try:
+
+            self.link = jsonstr["data"]["link"]
+
+            self.id_jobs = jsonstr["data"]["id"]
+
+            self.st = jsonstr["status"]
+
+            self.ty = jsonstr["data"]["package_name"]
+
+            self.price_after_cost = jsonstr['data']['price_per_after_cost']
+
+            self.object_id = jsonstr['data']['object_id']
+
+            if (self.ty  == 'comment'):
+
+                    self.idcmt =  str(jsonstr['data']['comment_run']['id'])
+
+                    self.ndungcmt = str(jsonstr['data']['comment_run']['message'])
+
+                    self.ndung_ht = get_.split ('"comment_run"',1)[1].split ('"message":"')[1].split ('","status"')[0]
+
+                    return {"trangthai":True, "id_jobs":self.id_jobs,"link":self.link,"type":self.ty,"coin":self.price_after_cost,"object_id":self.object_id, "id_cmt":self.idcmt, "ndung_cmt":self.ndungcmt}
+
+            else:
+
+                return {"trangthai":True, "id_jobs":self.id_jobs,"link":self.link,"type":self.ty,"coin":self.price_after_cost,"object_id":self.object_id}
+
+        except:
+
+            return {"trangthai":False}
+
+    def hoan_thanh (self):
+
+        if (self.ty == 'like' or self.ty == 'follow' ):
+
+            data ={"instagram_users_advertising_id":self.id_jobs,"instagram_account_id":self.account_id,"async":True,"data":None}
+
+            get_ = self.req.post ('https://gateway.golike.net/api/advertising/publishers/instagram/complete-jobs', headers=self.header,data=json.dumps(data)).text
+
+            jsonstr = json.loads(get_)
+
+        elif (self.ty  == 'comment'):
+
+                dt = '{' + f'"instagram_users_advertising_id":{self.id_jobs},"instagram_account_id":{self.account_id},"async":true,"comment_id":{self.idcmt},"message":"{self.ndung_ht}"' + '}'
+
+                get_ = self.req.post ('https://gateway.golike.net/api/advertising/publishers/instagram/complete-jobs', headers=self.header, data=dt).text
+
+                #get_ = self.req.post ('https://gateway.golike.net/api/advertising/publishers/instagram/complete-jobs', headers=self.header, data=data).text
+
+
+
+                jsonstr = json.loads(get_)
+
+        if (jsonstr["status"] == 200):
+
+            return {"trangthai":True}
+
+        else:
+
+            return {"trangthai":False}
+
+
+
+    def bao_loi (self):
+
+        try:
+
+            data = {"ads_id":self.id_jobs,"object_id":f"{self.object_id }","account_id":self.account_id,"type":self.ty}
+
+            get_jobs = self.req.post (f'https://gateway.golike.net/api/advertising/publishers/instagram/skip-jobs',data=json.dumps (data),headers=self.header).json()
+
+            if (get_jobs["status"] == 200):
+
+                return {"trangthai":True}
+
+            else:
+
+                return {"trangthai":False}
+
+        except Exception as e:
+
+               print (e)
+
+               return {"trangthai":False}
+
+
+
+class INSTAGRAM_REQ:
+
+    def __init__(self,cookie,req=None,useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'):
+
+        self.cookie = cookie
+
+        if (req == None):
+
+            self.req= requests.Session ()
+
+        else:
+
+            self.req= req
+
+        self.useragent=useragent
+
+        self.header = {
+
+            'accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+
+            'cookie': self.cookie ,
+
+            'dpr':'1',
+
+            'priority':'u=0, i',
+
+            'sec-ch-prefers-color-scheme':'light',
+
+            'sec-fetch-dest':'document',
+
+            'sec-fetch-mode':'navigate',
+
+            'sec-fetch-site':'same-origin',
+
+            'upgrade-insecure-requests':'1',
+
+            'user-agent':self.useragent,
+
+            'viewport-width':'912'
+
+        }
+
+        self.csrftoken= cookie.split ('csrftoken=')[1].split (';')[0].replace (' ','')
+
+    def check_username (self):
+
+        try:
+
+            text = self.req.get ('https://www.instagram.com/profile.php',headers=self.header ).text
+
+            username_ig = text.split ('"username":"')[1].split ('"')[0]
+
+            return username_ig
+
+        except:
+
+            return 'none'
+
+    def follow(self, url):
+
+        try:
+
+            get = self.req.get (url,headers=self.header).text
+
+            
+
+            av = get.split ('"actorID":"')[1].split ('"')[0]
+
+            hs= get.split ('"haste_session":"')[1].split ('"')[0]
+
+            hsi = get.split ('"hsi":"')[1].split ('"')[0]
+
+            rev_ = get.split ('"__spin_r":')[1].split (',')[0]
+
+            __spin_t = get.split ('"__spin_t":')[1].split (',')[0]
+
+            fb_dtsg = get.split ('"DTSGInitData"')[1].split ('"token":"')[1].split ('"')[0]
+
+            lsd = get.split ('"LSD",')[1].split ('"token":"')[1].split ('"')[0]
+
+            jazoest=get.split ('&jazoest=')[1].split ('"')[0].split ('&')[0]
+
+            id_fl = get.split ('"profile_id":"')[1].split ('"')[0]
+
+
+
+            versioningID = get.split ('"versioningID":"')[1].split ('"')[0]
+
+            app_id = get.split ('"X-IG-App-ID":"')[1].split ('"')[0]
+
+            
+
+            import urllib.parse
+
+            import urllib
+
+            data = ('av=' + av +'&__d=www&__user=0&__a=1&__req=y&__hs=' +urllib.parse.quote (hs)+ '&dpr=1&__ccg=UNKNOWN&__rev='+ rev_+'&__s=2jf96v%3Atu2kai%3Azcd8rn&__hsi='+hsi+'&__dyn=7xeUjG1mxu1syUbFp41twpUnwgU7SbzEdF8aUco2qwJxS0k24o0B-q1ew65xO0FE2awpUO0n24oaEnxO1ywOwv89k2C1Fwc60D87u3ifK0EUjwGzEaE2iwNwmE2eUlwhEe87q7U1bobpEbUGdwtUd-2u2J0bS1LwTwKG1pg2fwxyo6O1FwlEcUed6goK2OubxKi2qi7ErwYCz8rwHwjE&__csr=gaQtMNsQszN6xAZE-xnllh5mGQh5EJaWiApXyTuHGHKXACIxWBWqhpE_AJljiy99ZHjADDVay98Cj-mGhbCyp4FqKHABDDGWAyFEHgObWWl2EDBUyiQ9Bix64EBkm-ido8u7pmcx28Uxe8w04yv-2S1180FU-7A0dYzQczE4wM5W16x24oCq5Cdwxg981GU0a5C0HE9mip24ya5o6y48jPoaU8U18EsgaCmp912qpss0g-1mBIAOzQ9D2gmzU568xnyE2ADDyro4Z03_UbW80--4402De01kYw&__comet_req=7&fb_dtsg='+urllib.parse.quote (fb_dtsg)+'&jazoest='+jazoest+'&lsd='+lsd+'&__spin_r='+rev_+'&__spin_b=trunk&__spin_t='+__spin_t+'&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=usePolarisFollowMutation&variables=%7B%22target_user_id%22%3A%22' + id_fl+'%22%2C%22container_module%22%3A%22profile%22%2C%22nav_chain%22%3A%22PolarisProfilePostsTabRoot%3AprofilePage%3A1%3Avia_cold_start%22%7D&server_timestamps=true&doc_id=7275591572570580')
+
+            header_req = {
+
+            'accept-language':'vi,en-US;q=0.9,en;q=0.8',
+
+            'content-length':str(len(data)),
+
+            'content-type':'application/x-www-form-urlencoded',
+
+            'cookie':self.cookie,
+
+            'origin':'https://www.instagram.com',
+
+            'priority':'u=1, i',
+
+            'referer':url,
+
+            'user-agent':self.useragent,
+
+            'x-asbd-id':'129477',
+
+            'x-bloks-version-id':versioningID,
+
+            'x-csrftoken':self.csrftoken,
+
+            'x-fb-friendly-name':'usePolarisFollowMutation',
+
+            'x-fb-lsd':lsd,
+
+            'x-ig-app-id':app_id,
+
+                    }
+
+            fl = self.req.post ('https://www.instagram.com/graphql/query', data=data , headers=header_req).text
+
+            trangthai= False
+
+            if ('"status":"ok"' in fl):
+
+                trangthai = True
+
+            trangthai_2 = False
+
+            if ('"following":true' in fl ):
+
+                trangthai_2 = True
+
+            elif ('"followed_by":true' in fl ):
+
+                trangthai_2 = True
+
+            elif ('"is_bestie":true' in fl ):
+
+                trangthai_2 = True
+
+            elif ('"outgoing_request":true' in fl ):
+
+                trangthai_2 = True
+
+            if (trangthai == True and trangthai_2 == False):
+
+                return {"trangthai":'limit',"lido":"limit"}
+
+            
+
+            elif (trangthai == True and  trangthai_2==True):
+
+                return {"trangthai":True}
+
+            else:
+
+                return {"trangthai":False,"lido":'thao tác thất bại'}
+
+        except Exception as e:
+
+            return {"trangthai":False,"lido":'thao tác thất bại'}
+
+    def like(self, url):
+
+        try:
+
+            get = self.req.get (url,headers=self.header).text
+
+            
+
+            av = get.split ('"actorID":"')[1].split ('"')[0]
+
+            hs= get.split ('"haste_session":"')[1].split ('"')[0]
+
+            hsi = get.split ('"hsi":"')[1].split ('"')[0]
+
+            rev_ = get.split ('"__spin_r":')[1].split (',')[0]
+
+            __spin_t = get.split ('"__spin_t":')[1].split (',')[0]
+
+            fb_dtsg = get.split ('"DTSGInitData"')[1].split ('"token":"')[1].split ('"')[0]
+
+            lsd = get.split ('"LSD",')[1].split ('"token":"')[1].split ('"')[0]
+
+            jazoest=get.split ('&jazoest=')[1].split ('"')[0].split ('&')[0]
+
+            media_id = get.split ('"media_id":"')[1].split ('"')[0]
+
+
+
+            versioningID = get.split ('"versioningID":"')[1].split ('"')[0]
+
+            app_id = get.split ('"X-IG-App-ID":"')[1].split ('"')[0]
+
+            
+
+            import urllib.parse
+
+            import urllib
+
+            data = (f'av={av}&__d=www&__user=0&__a=1&__req=l&__hs={urllib.parse.quote (hs)}&dpr=1&__ccg=UNKNOWN&__rev={rev_}&__s=8x9z5g%3Atu2kai%3Afgwok5&__hsi={hsi}&__dyn=7xeUjG1mxu1syUbFp41twpUnwgU7SbzEdF8aUco2qwJxS0k24o0B-q1ew65xO0FE2awpUO0n24oaEnxO1ywOwv89k2C1Fwc60D87u3ifK0EUjwGzEaE2iwNwmE2eUlwhEe87q7U1bobpEbUGdwtUd-2u2J0bS1LwTwKG1pg2fwxyo6O1FwlEcUed6goK2OubxKi2K7ErwYCz8rwHwjE&__csr=gaO6MRsQvf4qbdfrdEhZll4lqHh4haZbWiApUZQEOXDACBhWBAqhp8jAjRAgKivqQV8_AG8AypfVqF4LAypqBGWKaDDCxCaQcy-KBgG9Vu8AJ3QE98Bam-ido8UtBoO48zy99Q00ihcw2Dypo0RbwhUZ1K18c0Fogx69Cw0MNo3kp9A8i8Elwq8gxfdwHwzw4ywi6mp913ACn7030VUCS1fg0_-0j7x100FPw0lf8&__comet_req=7&fb_dtsg={urllib.parse.quote (fb_dtsg)}&jazoest={jazoest}&lsd={lsd}&__spin_r={rev_}&__spin_b=trunk&__spin_t={__spin_t}&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=usePolarisLikeMediaLikeMutation&variables=%7B%22media_id%22%3A%22{media_id}%22%7D&server_timestamps=true&doc_id=8244673538908708')
+
+            header_req = {
+
+            'accept-language':'vi,en-US;q=0.9,en;q=0.8',
+
+            'content-length':str(len(data)),
+
+            'content-type':'application/x-www-form-urlencoded',
+
+            'cookie':self.cookie,
+
+            'origin':'https://www.instagram.com',
+
+            'priority':'u=1, i',
+
+            'referer':url,
+
+            'user-agent':self.useragent,
+
+            'x-asbd-id':'129477',
+
+            'x-bloks-version-id':versioningID,
+
+            'x-csrftoken':self.csrftoken,
+
+            'x-fb-friendly-name':'usePolarisFollowMutation',
+
+            'x-fb-lsd':lsd,
+
+            'x-ig-app-id':app_id,
+
+                    }
+
+            lk = self.req.post ('https://www.instagram.com/graphql/query', data=data , headers=header_req).text
+
+            trangthai= False
+
+            if ('"status":"ok"' in lk):
+
+                trangthai = True
+
+            trangthai_2 = False
+
+            if ('"is_final":true' in lk ):
+
+                trangthai_2 = True
+
+
+
+            if (trangthai == True and trangthai_2 == False):
+
+                return {"trangthai":'limit',"lido":"limit"}
+
+            
+
+            elif (trangthai == True and  trangthai_2==True):
+
+                return {"trangthai":True}
+
+            else:
+
+                return {"trangthai":False,"lido":'thao tác thất bại'}
+
+        except Exception as e:
+
+            return {"trangthai":False,"lido":'thao tác thất bại'}
+
+       
+
+    def comment (self,url,ndung):
+
+        try:
+
+            get = self.req.get (url,headers=self.header).text
+
+            
+
+            av = get.split ('"actorID":"')[1].split ('"')[0]
+
+            hs= get.split ('"haste_session":"')[1].split ('"')[0]
+
+            hsi = get.split ('"hsi":"')[1].split ('"')[0]
+
+            rev_ = get.split ('"__spin_r":')[1].split (',')[0]
+
+            __spin_t = get.split ('"__spin_t":')[1].split (',')[0]
+
+            fb_dtsg = get.split ('"DTSGInitData"')[1].split ('"token":"')[1].split ('"')[0]
+
+            lsd = get.split ('"LSD",')[1].split ('"token":"')[1].split ('"')[0]
+
+            jazoest=get.split ('&jazoest=')[1].split ('"')[0].split ('&')[0]
+
+            id_cmt = get.split ('"media_id":"')[1].split ('"')[0]
+
+
+
+            versioningID = get.split ('"versioningID":"')[1].split ('"')[0]
+
+            app_id = get.split ('"X-IG-App-ID":"')[1].split ('"')[0]
+
+            
+
+            import urllib.parse
+
+            import urllib
+
+            data = (f'av={av}&__d=www&__user=0&__a=1&__req=k&__hs={urllib.parse.quote (hs)}&dpr=1&__ccg=UNKNOWN&__rev={rev_}&__s=hjlypc%3Atu2kai%3Agg89ig&__hsi={hsi}&__dyn=7xeUjG1mxu1syUbFp41twpUnwgU7SbzEdF8aUco2qwJxS0k24o0B-q1ew65xO0FE2awpUO0n24oaEnxO1ywOwv89k2C1Fwc60D87u3ifK0EUjwGzEaE2iwNwmE2eUlwhEe87q7U1bobpEbUGdwtUd-2u2J0bS1LwTwKG1pg2fwxyo6O1FwlEcUed6goK2OubxKi2K7ErwYCz8rwHwjE&__csr=gaO6MRsQvf4qbdfqfElRlkhlGJ4h4HQLFahDzTizbKuiql7GmhF5Axehfmh2V9ZHjAz-iEyi9A_BGAi-i9BGmHGUGuuq6oHgObWWl2EDBUyiQfiwAykFrV8RwzxSlz8gye8ADg0194O0au9Bw3kK17zQ6U4wM2Bx24oCq0335wdhACgx8yxm1Ex24YS2K2e0ia18ppAA4eipss0c3Dyro4Z03_U1cu4402De01kYw&__comet_req=7&fb_dtsg={urllib.parse.quote (fb_dtsg)}&jazoest={jazoest}&lsd={lsd}&__spin_r={rev_}&__spin_b=trunk&__spin_t={__spin_t}&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=PolarisPostCommentInputRevampedMutation&variables=%7B%22connections%22%3A%5B%22client%3Aroot%3A__PolarisPostCommentsDirect__xdt_api__v1__media__media_id__comments__connection_connection(data%3A%7B%7D%2Cmedia_id%3A%5C%22{id_cmt}%5C%22%2Csort_order%3A%5C%22popular%5C%22)%22%5D%2C%22request_data%22%3A%7B%22comment_text%22%3A%22{urllib.parse.quote (ndung)}%22%7D%2C%22media_id%22%3A%223420172113959420596%22%7D&server_timestamps=true&doc_id=7980226328678944')
+
+            header_req = {
+
+            'accept-language':'vi,en-US;q=0.9,en;q=0.8',
+
+            'content-length':str(len(data)),
+
+            'content-type':'application/x-www-form-urlencoded',
+
+            'cookie':self.cookie,
+
+            'origin':'https://www.instagram.com',
+
+            'priority':'u=1, i',
+
+            'referer':url,
+
+            'user-agent':self.useragent,
+
+            'x-asbd-id':'129477',
+
+            'x-bloks-version-id':versioningID,
+
+            'x-csrftoken':self.csrftoken,
+
+            'x-fb-friendly-name':'usePolarisFollowMutation',
+
+            'x-fb-lsd':lsd,
+
+            'x-ig-app-id':app_id,
+
+                    }
+
+            lk = self.req.post ('https://www.instagram.com/graphql/query', data=data , headers=header_req).text
+
+    
+
+            trangthai= False
+
+            if ('"status":"ok"' in lk):
+
+                trangthai = True
+
+            trangthai_2 = False
+
+            if ('"is_final":true' in lk ):
+
+                trangthai_2 = True
+
+
+
+            if (trangthai == True and trangthai_2 == False):
+
+                return {"trangthai":'limit',"lido":"limit"}
+
+            
+
+            elif (trangthai == True and  trangthai_2==True):
+
+                return {"trangthai":True}
+
+        except Exception as e:
+
+            return {"trangthai":False,"lido":'thao tác thất bại'}
+
+
+
+def clean_bar ():
+
+  if (kiemtrathietbi()):
+
+    os.system ("clear")
+
+  else:
+
+    os.system ("cls")
+
+def addproxy (proxy, req = None):
+
+    from requests.auth import HTTPProxyAuth
+
+    if (req == None):
+
+        req = requests.Session()
+
+    proxy=proxy.replace(' ','')
+
+    try:
+
+        ip,port,user,passw = None,None,None,None
+
+        if (len(proxy.split(':')) ==4 ):
+
+            ip,port,user,passw=proxy.split(':')
+
+        elif (len(proxy.split(':')) == 2):
+
+            ip,port=proxy.split(':')
+
+        if ip != None:
+
+            if user !=None:
+
+                        proxies = {
+
+                        "http": f"http://{user}:{passw}@{ip}:{port}",
+
+                        "https": f"http://{user}:{passw}@{ip}:{port}"
+
+                        }
+
+                        auth = requests.auth.HTTPProxyAuth(user, passw)
+
+                        req.proxies = proxies
+
+                        req.auth = auth
+
+            else:
+
+                        proxies = {
+
+                        "http": f"http://{ip}:{port}",
+
+                        "https": f"http://{ip}:{port}",
+
+                        }
+
+                        req.proxies = proxies
+
+    except:
+
+        pass
+
+    return req
+
+def checkcauhinh_golikeig (dulieu , account):
+
+    for i in range(len(account['data'])):
+
+        id =  account['data'][i]['id']
+
+        id_u = account['data'][i]['instagram_id']
+
+        ten = account['data'][i]['instagram_username']
+
+        if  (dulieu == id or dulieu == id_u or dulieu == ten):
+
+            return {"trangthai":True, "id":id}
+
+    return {"trangthai":False, "id":id}
+
+redb = "\033[1;31m"
+
+red = "\033[1;31m"
+
+green = "\033[1;32m"
+
+red="\033[1;31m"
+
+black="\033[0;30m"
+
+blackb="\033[1;30m"
+
+white="\033[1;37m"
+
+whiteb="\033[1;37m"
+
+redb="\033[1;31m"
+
+green="\033[0;32m"
+
+greenb="\033[1;32m"
+
+yellow="\033[0;33m"
+
+yellowb="\033[1;33m"
+
+syan="\033[1;36m"
+
+blue="\033[0;34m"
+
+blueb="\033[1;34m"
+
+purple="\033[0;35m"
+
+purpleb="\033[1;35m"
+
+lightblue="\033[0;36m"
+
+lightblueb="\033[1;36m"
+
+xanh= "\033[1;96m"
+
+xlacay ="\033[0;32m"
+
+den="\033[1;90m"
+
+do="\033[1;91m"
+
+luc="\033[1;92m"
+
+vang="\033[1;93m"
+
+xduong="\033[1;94m"
+
+delay1=''
+
+boqua1= ''
+
+hong="\033[1;95m"
+
+trang="\033[1;97m"
+
+vang="\033[1;93m"
+
+thanhngang ="══════════════════════════════════════════════════════════════"
+
+redb = "\033[1;31m"
+
+red = "\033[1;31m"
+
+green = "\033[1;32m"
+
+red="\033[1;31m"
+
+black="\033[0;30m"
+
+blackb="\033[1;30m"
+
+white="\033[1;37m"
+
+whiteb="\033[1;37m"
+
+redb="\033[1;31m"
+
+green="\033[0;32m"
+
+greenb="\033[1;32m"
+
+yellow="\033[0;33m"
+
+yellowb="\033[1;33m"
+
+syan="\033[1;36m"
+
+blue="\033[0;34m"
+
+blueb="\033[1;34m"
+
+purple="\033[0
